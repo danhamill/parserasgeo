@@ -1,4 +1,4 @@
-#! /usr/bin/python 
+#! /usr/bin/python
 import glob
 import sys
 import filecmp
@@ -10,22 +10,22 @@ import parserasgeo as prg
 
 def main():
     outfile = 'test.out'
-    test_files = glob.glob('../geos/*.g??')
+    test_files = glob.glob(r"C:\workspace\git_clones\parserasgeo\geofiles\*.g*")
     #print len(test_files)
     #for x in test_files:
         #print type(x), x
     #    print  x
 
     for test_file in test_files:
-        print '*' * 30,
-        print 'Processing ', test_file
+        print('*' * 30),
+        print('Processing ', test_file)
         geo = prg.ParseRASGeo(test_file)
         geo.write(outfile)
-
+        
         if filecmp.cmp(test_file, outfile, shallow=False):
-            print 'Geometry file', test_file, 'exported correctly.'
+            print('Geometry file', test_file, 'exported correctly.')
         else:
-            print 'WARNING: file', test_file, 'did not export properly'
+            print('WARNING: file', test_file, 'did not export properly')
             subprocess.Popen(["diff", test_file, outfile])
             sys.exit('WARNING: file' + test_file + 'did not export properly')
 
