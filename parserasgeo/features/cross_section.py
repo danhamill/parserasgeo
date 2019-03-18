@@ -5,6 +5,20 @@ from math import sqrt, cos, radians
 # Global debug, this is set when initializing CrossSection
 DEBUG = False
 
+class BankStationError(Exception):
+    """
+    An error if the bank stations are not correct
+    
+    e.g. left bank station > right bank station, right bank station > last station
+    """
+    pass
+
+class ChannelNError(Exception):
+    """
+    An error to raise if the user attempts to change channel n values without first defining the channel
+    """
+    pass
+
 class Feature(object):
     """
     This is a template for other features.
@@ -23,7 +37,6 @@ class Feature(object):
 
     def __str__(self):
         pass
-
 
 class Levee(object):
     """
@@ -95,6 +108,7 @@ class Skew(object):
 class Header(object):
     def __init__(self):
         self.xs_id = None
+        self.xs_id_str = None
         self.node_type = None
         self.lob_length = None
         self.channel_length = None
@@ -110,6 +124,9 @@ class Header(object):
     def import_geo(self, line, geo_file):
         fields = line[23:].split(',')
         assert len(fields) == 5
+
+        self.xs_id_str = fields[1]
+
         vals = [fl_int(x) for x in fields]
         # Node type and cross section id
         self.node_type = vals[0]
@@ -131,7 +148,7 @@ class Header(object):
     def __str__(self):
         s = 'Type RM Length L Ch R = '
         s += str(self.node_type) + ' ,'
-        s += '{:<8}'.format(str(self.xs_id)) + ','
+        s += str(self.xs_id_str) + ','
         s += str(self.lob_length) + ',' + str(self.channel_length) + ',' + str(self.rob_length) + '\n'
         return s
 
@@ -227,6 +244,60 @@ class StationElevation(object):
         # convert to padded columns of 8
         temp_str = print_list_by_group(sta_elev_list, 8, 10)
         s += temp_str
+        return s
+
+
+class Vert_Manning_n(object):
+    def __init__(self):
+        self.num_vert_n_elev = None
+        self.num_vert_n_sta = None
+        self.num_vert_n_flow = None
+        self.vert_n_elev = []
+        self.vert_n_sta = []
+
+    @staticmethod
+    def test(line):
+        if line[:22] == 'Vertical n Elevations=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        self.num_vert_n_elev = int(line[22:])
+        line =next(geo_file)
+
+        #Process vertical elevations
+        while line[:1] == ' ' or line[:1].isdigit() or line[:1] == '-' or line[:1] == '.':
+            vals = split_block_obs(line, 8)
+            for i in range(0, len(vals), 1):
+                self.vert_n_elev.append(vals[i])
+            line = next(geo_file)
+        assert self.num_vert_n_elev == len(self.vert_n_elev)
+
+        #process vertical n stations
+        if line[:23] != 'Vertical n for Station=':
+            raise ValueError("Vertical n for Station= does not follow Vertical n Elevations= in geometry file. Aborting.")
+        self.num_vert_n_sta = int(line[23:])
+        line = next(geo_file)
+        while line[:1] == ' ' or line[:1].isdigit() or line[:1] == '-' or line[:1] == '.':
+            vals = split_block_obs(line, 8)
+            for i in range(0, len(vals), 1):
+                self.vert_n_sta.append(vals[i])
+            line = next(geo_file)
+        assert self.num_vert_n_elev == len(self.vert_n_sta)
+
+        #process vertical n follow
+        if line[:16] != 'Vertical n Flow=':
+            raise ValueError('Vertical n Flow= does not follow Vercial n Elevations in Geometry file. Aborting')
+        self.num_vert_n_flow = int(line[16:])
+        line = next(geo_file)
+        return line
+
+    def __str__(self):
+        s = 'Vertical n Elevations= ' + str(self.num_vert_n_elev) + '\n'
+        s += print_list_by_group(self.vert_n_elev,8,10)
+        s += 'Vertical n for Station=' + str(self.num_vert_n_sta) + '\n'
+        s += print_list_by_group(self.vert_n_sta,8,10)
+        s += 'Vertical n Flow=' + str(self.num_vert_n_flow) + '\n'
         return s
 
 
@@ -466,15 +537,20 @@ class CrossSection(object):
         self.iefa = IEFA()
         self.mannings_n = Mannings_n()
         self.obstruct = Obstruction()
+        self.vert_manning_n = Vert_Manning_n()
         self.bank_sta = BankStation()
         self.skew = Skew()
         self.levee = Levee()
         self.rating_curve = RatingCurve()
         self.parts = [self.header, self.description, self.cutline, self.iefa, self.mannings_n, self.obstruct, self.bank_sta,
-                      self.sta_elev, self.skew, self.levee, self.rating_curve]
+                      self.sta_elev, self.skew, self.levee, self.rating_curve,self.vert_manning_n]
 
         self.geo_list = []  # holds all parts and unknown lines (as strings)
-
+        
+        # used to define n-values in the channel only (i.e. between the bank stations)
+        # gets defined in define_channel_n
+        self.channel_n = None
+        
     def import_geo(self, line, geo_file):
         while line != '\n':
             for part in self.parts:
@@ -514,6 +590,77 @@ class CrossSection(object):
             last_pt = pt
 
         return cl_length/length
+    
+    def define_channel_n(self):
+        """
+        Checks if the Manning's n is defined at the bank stations
+        If they are not defined at the bank stations, add Manning's n values at those points that correspond with the nearest-left n-value
+        
+        :returns: None
+        """
+        manning_stations = [x[0] for x in self.mannings_n.values]
+        
+        for bank in [self.bank_sta.left, self.bank_sta.right]:
+            # if the bank station is not in the list, grab the Manning's n to the left
+            if bank not in manning_stations:
+                leftward_manning_all = [x[1] for x in self.mannings_n.values if x[0] < bank]
+                leftward_index = len(leftward_manning_all)
+                leftward_manning_nearest = leftward_manning_all[-1]
+                manning_insert = (bank, leftward_manning_nearest, 0)
+                self.mannings_n.values.insert(leftward_index, manning_insert)
+        
+        # do not pull the n-value at the right bank because that defines the n-values to the right of the bank
+        self.channel_n = [x for x in self.mannings_n.values if (x[0] >= self.bank_sta.left and x[0] <self.bank_sta.right)]        
+            
+    def alter_channel_n(self, scalar):
+        """
+        Alters the channel n-values by a scaling factor
+        
+        :param scalar: a number by which the channel n values are scaled
+        :returns: None
+        :raises ChannelNError: raises error if channel_n not defined
+        """
+        
+        if self.channel_n is not None:
+            new_channel_n = []
+            for n in self.channel_n:
+                temp_n = n[1]*scalar
+                temp_tuple = (n[0], temp_n, 0)
+                new_channel_n.append(temp_tuple)
+            
+            for ind, old_n in enumerate(self.mannings_n.values):
+                for new_n in new_channel_n:
+                    if old_n[0] == new_n[0]:
+                        self.mannings_n.values.pop(ind)
+                        self.mannings_n.values.insert(ind, new_n)
+                        break
+                
+            self.channel_n = new_channel_n
+        else:
+            raise ChannelNError('The channel is undefined. Run define_channel_n before using alter_channel_n')
+
+    def bank_station_change(self, constant):
+        """
+        Move the bank stations by constant [ft] if the user deems the original model to not be accurate
+        If constant > 0, the stations move outward
+        If cosntant < 0, the stations move inward
+        
+        :param constant: constant by which the stations are moved
+        :returns: None
+        :raises BankStationError: riases error if moving the bank statiosn crates impossible situations (e.g. left bank > right bank)
+        """
+        
+        self.bank_sta.left -= constant
+        self.bank_sta.right += constant
+        
+        if self.bank_sta.left >= self.bank_sta.right:
+            raise BankStationError('left bank >= right bank for ({}, {}, {})'.format(self.header.station_id, self.river, self.reach))
+        
+        if self.bank_sta.left < 0:
+            raise BankStationError('left bank < 0 for ({}, {}, {})'.format(self.header.station_id, self.river, self.reach))
+        
+        if self.bank_sta.right > self.sta_elev.points[-1][0]:
+            raise BankStationError('right bank > last station for ({}, {}, {})'.format(self.header.station_id, self.river, self.reach))
 
 
     def __str__(self):
