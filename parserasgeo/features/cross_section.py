@@ -5,13 +5,6 @@ from math import sqrt, cos, radians
 # Global debug, this is set when initializing CrossSection
 DEBUG = False
 
-class BankStationError(Exception):
-    """
-    An error if the bank stations are not correct
-    e.g. left bank station > right bank station, right bank station > last station
-    """
-    pass
-
 class ChannelNError(Exception):
     """
     An error to raise if the user attempts to change channel n values without first defining the channel
