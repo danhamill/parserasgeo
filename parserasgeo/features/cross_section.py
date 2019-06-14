@@ -1,5 +1,5 @@
 from .tools import fl_int, split_by_n_str, pad_left, print_list_by_group, split_block_obs, split_by_n
-from .description import Description
+from .description import Description 
 from math import sqrt, cos, radians
 
 # Global debug, this is set when initializing CrossSection
@@ -8,7 +8,6 @@ DEBUG = False
 class BankStationError(Exception):
     """
     An error if the bank stations are not correct
-
     e.g. left bank station > right bank station, right bank station > last station
     """
     pass
@@ -121,8 +120,6 @@ class Skew(object):
     def __str__(self):
         return 'Skew Angle= '+str(fl_int(self.angle))+' \n'
 
-
-
 # TODO: possibly move header into CrossSection
 class Header(object):
     def __init__(self):
@@ -143,9 +140,8 @@ class Header(object):
     def import_geo(self, line, geo_file):
         fields = line[23:].split(',')
         assert len(fields) == 5
-
+        #Node ID as string
         self.xs_id_str = fields[1]
-
         vals = [fl_int(x) for x in fields]
         # Node type and cross section id
         self.node_type = vals[0]
@@ -170,7 +166,6 @@ class Header(object):
         s += str(self.xs_id_str) + ','
         s += str(self.lob_length) + ',' + str(self.channel_length) + ',' + str(self.rob_length) + '\n'
         return s
-
 
 class CutLine(object):
     def __init__(self):
@@ -210,7 +205,6 @@ class CutLine(object):
 class LastEdit(object):
     pass
 
-
 class StationElevation(object):
     def __init__(self):
         self.num_pts = None
@@ -234,7 +228,6 @@ class StationElevation(object):
             if pt[0] == sta:
                 return pt[1]
         raise AttributeError('No station matching ' + str(sta) + ' in current XS.')
-
 
     def import_geo(self, line, geo_file):
         """
@@ -319,7 +312,6 @@ class Vert_Manning_n(object):
         s += 'Vertical n Flow=' + str(self.num_vert_n_flow) + '\n'
         return s
 
-
 class IEFA(object):
     def __init__(self):
         self.num_iefa = None
@@ -378,7 +370,6 @@ class IEFA(object):
         s += '\n'
         return s
 
-
 class Obstruction(object):
     def __init__(self):
         self.num_blocked = None
@@ -413,7 +404,6 @@ class Obstruction(object):
         s = '#Block Obstruct= ' + str(self.num_blocked) + ' ,' + pad_left(self.blocked_type, 2) + ' \n'
         s += print_list_by_group(blocked_list, 8, 9)
         return s
-
 
 class Mannings_n(object):
     def __init__(self):
@@ -496,7 +486,6 @@ class Mannings_n(object):
         else:
             return None
 
-
 class BankStation(object):
     def __init__(self):
         self.left = None
@@ -536,7 +525,6 @@ class ExpansionContraction(object):
 
     def __str__(self):
         pass
-
 
 class CrossSection(object):
     def __init__(self, river, reach, debug=False):
