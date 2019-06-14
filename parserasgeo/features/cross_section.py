@@ -5,6 +5,7 @@ from math import sqrt, cos, radians
 # Global debug, this is set when initializing CrossSection
 DEBUG = False
 
+<<<<<<< HEAD
 class BankStationError(Exception):
     """
     An error if the bank stations are not correct
@@ -12,6 +13,8 @@ class BankStationError(Exception):
     """
     pass
 
+=======
+>>>>>>> upstream/master
 class ChannelNError(Exception):
     """
     An error to raise if the user attempts to change channel n values without first defining the channel
@@ -123,6 +126,7 @@ class Skew(object):
 # TODO: possibly move header into CrossSection
 class Header(object):
     def __init__(self):
+        # TODO: change xs_id to station
         self.xs_id = None
         self.xs_id_str = None
         self.node_type = None
@@ -140,9 +144,13 @@ class Header(object):
     def import_geo(self, line, geo_file):
         fields = line[23:].split(',')
         assert len(fields) == 5
+<<<<<<< HEAD
         #Node ID as string
         self.xs_id_str = fields[1]
         vals = [fl_int(x) for x in fields]
+=======
+        vals = [self._header_fl_int(x) for x in fields]
+>>>>>>> upstream/master
         # Node type and cross section id
         self.node_type = vals[0]
         # TODO - RAS allows Xs ids to be in the format '225.20', fl_int() strips trailing zeros
@@ -160,6 +168,19 @@ class Header(object):
 
         return next(geo_file)
 
+    ### TODO: Handle null reach lengths appropriately
+    @staticmethod
+    def _header_fl_int(x):
+        """ 
+        Reach lengths may be blank at the downstream end. This looks out for 
+        that scenario and returns 0. This will break the ability to reproduce 
+        some geometry file to the character and should be updated at some point!
+        """
+        if x == '' or x == '\n':
+            return 0
+        else:
+            return fl_int(x)
+        
     def __str__(self):
         s = 'Type RM Length L Ch R = '
         s += str(self.node_type) + ' ,'
@@ -645,9 +666,10 @@ class CrossSection(object):
             self.channel_n = new_channel_n
         else:
             raise ChannelNError('The channel is undefined. Run define_channel_n before using alter_channel_n')
-
-    def bank_station_change(self, constant):
+            
+    def alter_overbank_n(self, scalar):
         """
+<<<<<<< HEAD
         Move the bank stations by constant [ft] if the user deems the original model to not be accurate
         If constant > 0, the stations move outward
         If cosntant < 0, the stations move inward
@@ -669,6 +691,26 @@ class CrossSection(object):
         if self.bank_sta.right > self.sta_elev.points[-1][0]:
             raise BankStationError('right bank > last station for ({}, {}, {})'.format(self.header.station_id, self.river, self.reach))
 
+=======
+        Alters the overbank n-values by a scaling factor.
+        
+        :param scalar: a number by which the channel n values are scaled
+        :raises ChannelNError: raises error if channel_n not defined
+        """
+        
+        if self.channel_n is None:
+            raise ChannelNError('The channel is undefined. Run define_channel_n before using alter_overbank_n')
+        
+        channel_n_stations = [x[0] for x in self.channel_n]
+        for ind, old_n in enumerate(self.mannings_n.values):
+            if old_n[0] in channel_n_stations:
+                pass
+            else:
+                temp_n = old_n[1]*scalar
+                temp_tuple = (old_n[0], temp_n, 0)
+                self.mannings_n.values.pop(ind)
+                self.mannings_n.values.insert(ind, temp_tuple)
+>>>>>>> upstream/master
 
     def __str__(self):
         s = ''
