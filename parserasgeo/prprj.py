@@ -18,9 +18,7 @@ class ProjectTitle(object):
         return False
 
     def import_prj(self, line, prj_file):
-        self.value = line.split('=')[1][:-1]
-
-
+        self.value = line.split('=')[1].strip()
         return prj_file
 
     def __str__(self):
@@ -54,7 +52,6 @@ class GeomFiles(object):
     def __init__(self):
         self.values = []
 
-
     @staticmethod
     def test(line):
         if line.split('=')[0] == 'Geom File':
@@ -62,7 +59,6 @@ class GeomFiles(object):
         return False
 
     def import_prj(self, line, prj_file):
-
         value = line.split('=')[1].strip()
         self.values.append(value)
         return prj_file
@@ -152,14 +148,9 @@ class AddData(object):
 def main():
 
     prj = ParseRASProject(r"C:\Users\RDCRLDDH\Desktop\NENMRHB4\NENMRHB4_hec_ras.prj")
-
-
     new = AddData(prj.prj_list)
-
     new.add_geom_to_prj('g09')
     new.add_plan_to_prj('p09')
-
-
     new.write(r"C:\Users\RDCRLDDH\Desktop\NENMRHB4\NENMRHB4_hec_ras.prj1")
 
 
