@@ -535,6 +535,288 @@ class ExpansionContraction(object):
     def __str__(self):
         pass
 
+class IceThickness(object):
+    def __init__(self):
+        #self.LOB = None
+        #self.Chan = None
+        #self.ROB = None
+        self.values = None
+        
+    @staticmethod
+    def test(line):
+        if line[:14] == 'Ice Thickness=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[14:].split(',')
+        assert len(values) == 3
+        #self.LOB = fl_int(values[0])
+        #self.Chan = fl_int(values[1])
+        #self.ROB = fl_int(values[2])
+        self.values = [fl_int(value) for value in values]
+        return next(geo_file)
+
+    def __str__(self):
+        #return 'Ice Thickness=' + str(self.LOB) + ',' + str(self.Chan) + ',' + str(self.ROB) + '\n'
+        return 'Ice Thickness=' + ','.join([str(f) for f in self.values]) + '\n'
+
+class IceMannings(object):
+    def __init__(self):
+        #self.LOB = None
+        #self.Chan = None
+        #self.ROB = None
+        self.values = None
+        
+    @staticmethod
+    def test(line):
+        if line[:9] == 'Ice Mann=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[9:].split(',')
+        assert len(values) == 3
+        #self.LOB = fl_int(values[0])
+        #self.Chan = fl_int(values[1])
+        #self.ROB = fl_int(values[2])
+        self.values = [fl_int(value) for value in values]
+        return next(geo_file)
+
+    def __str__(self):
+        #return 'Ice Mann=' + str(self.LOB) + ',' + str(self.Chan) + ',' + str(self.ROB) + '\n'
+        return 'Ice Mann=' + ','.join([str(f) for f in self.values]) + '\n'
+
+class IceSG(object):
+    def __init__(self):
+        self.value = None
+        
+    @staticmethod
+    def test(line):
+        if line[:21] == 'Ice Specific Gravity=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[21:].split(',')
+        assert len(values) == 1
+        self.value = fl_int(values[0])
+
+        return next(geo_file)
+
+    def __str__(self):
+        return 'Ice Specific Gravity=' + str(self.value) + '\n'
+
+class IceIsChan(object):
+    def __init__(self):
+        self.value = None
+        
+    @staticmethod
+    def test(line):
+        if line[:15] == 'Ice Is Channel=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[15:].split(',')
+        assert len(values) == 1
+        self.value = fl_int(values[0])
+
+        return next(geo_file)
+
+    def __str__(self):
+        return 'Ice Is Channel=' + str(self.value) + '\n'
+
+class IceIsOB(object):
+    def __init__(self):
+        self.value = None
+        
+    @staticmethod
+    def test(line):
+        if line[:10] == 'Ice Is OB=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[10:].split(',')
+        assert len(values) == 1
+        self.value = fl_int(values[0])
+
+        return next(geo_file)
+
+    def __str__(self):
+        return 'Ice Is OB=' + str(self.value) + '\n'
+
+class IceFrictionAngle(object):
+    def __init__(self):
+        self.value = None
+        
+    @staticmethod
+    def test(line):
+        if line[:19] == 'Ice Friction Angle=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[19:].split(',')
+        assert len(values) == 1
+        self.value = fl_int(values[0])
+
+        return next(geo_file)
+
+    def __str__(self):
+        return 'Ice Friction Angle=' + str(self.value) + '\n'
+
+class IcePorosity(object):
+    def __init__(self):
+        self.value = None
+        
+    @staticmethod
+    def test(line):
+        if line[:13] == 'Ice Porosity=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[13:].split(',')
+        assert len(values) == 1
+        self.value = fl_int(values[0])
+
+        return next(geo_file)
+
+    def __str__(self):
+        return 'Ice Porosity=' + str(self.value) + '\n'
+
+class IceK1(object):
+    def __init__(self):
+        self.value = None
+        
+    @staticmethod
+    def test(line):
+        if line[:7] == 'Ice K1=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[7:].split(',')
+        assert len(values) == 1
+        self.value = fl_int(values[0])
+
+        return next(geo_file)
+
+    def __str__(self):
+        return 'Ice K1=' + str(self.value) + '\n'
+
+class IceMaxMeanVel(object):
+    def __init__(self):
+        self.value = None
+        
+    @staticmethod
+    def test(line):
+        if line[:17] == 'Ice Max Mean Vel=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[17:].split(',')
+        assert len(values) == 1
+        self.value = fl_int(values[0])
+
+        return next(geo_file)
+
+    def __str__(self):
+        return 'Ice Max Mean Vel=' + str(self.value) + '\n'
+
+class IceCohesion(object):
+    def __init__(self):
+        self.value = None
+        
+    @staticmethod
+    def test(line):
+        if line[:13] == 'Ice Cohesion=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[13:].split(',')
+        assert len(values) == 1
+        self.value = fl_int(values[0])
+
+        return next(geo_file)
+
+    def __str__(self):
+        return 'Ice Cohesion=' + str(self.value) + '\n'
+
+class IceFixedMann(object):
+    def __init__(self):
+        self.value = None
+        
+    @staticmethod
+    def test(line):
+        if line[:15] == 'Ice Fixed Mann=':
+            return True
+        return False
+
+    def import_geo(self, line, geo_file):
+        values = line[15:].split(',')
+        assert len(values) == 1
+        self.value = fl_int(values[0])
+
+        return next(geo_file)
+
+    def __str__(self):
+        return 'Ice Fixed Mann=' + str(self.value) + '\n'
+
+class Ice(object):
+    def __init__(self, debug=False):
+
+        #self.river = river
+        #self.reach = reach
+
+        self.thickness = IceThickness()
+        self.mannings = IceMannings()
+        self.sg = IceSG()
+        self.isChan = IceIsChan()
+        self.isOB = IceIsOB()
+        self.frictionAngle = IceFrictionAngle()
+        self.porosity = IcePorosity()
+        self.k1 = IceK1()
+        self.maxMeanVel = IceMaxMeanVel()
+        self.cohesion = IceCohesion()
+        self.fixedMann = IceFixedMann()
+
+        self.parts = [self.thickness, self.mannings, self.sg, self.isChan, self.isOB, self.frictionAngle, 
+                      self.porosity, self.k1, self.maxMeanVel, self.cohesion, self.fixedMann]
+        
+        self.geo_list = []  # holds all parts and unknown lines (as strings)
+
+    def import_geo(self, line, geo_file):
+        while line != '\n':
+            for part in self.parts:
+                if part.test(line):
+                    #print str(type(part))+' found!'
+                    line = part.import_geo(line, geo_file)
+                    self.parts.remove(part)
+                    self.geo_list.append(part)
+
+                    break
+
+            else:  # Unknown line, add as text
+                self.geo_list.append(line)
+                line = next(geo_file)
+
+        return line
+
+    def __str__(self):
+        s = ''
+        for line in self.geo_list:
+            s += str(line)
+        return s + '\n'
+
+    @staticmethod
+    def test(line):
+        return IceThickness.test(line)
+
 class CrossSection(object):
     def __init__(self, river, reach, debug=False):
         # Set global debug
@@ -558,8 +840,9 @@ class CrossSection(object):
         self.skew = Skew()
         self.levee = Levee()
         self.rating_curve = RatingCurve()
+        self.ice = Ice()
         self.parts = [self.header, self.description, self.name, self.cutline, self.iefa, self.mannings_n, self.obstruct, self.bank_sta,
-                      self.sta_elev, self.skew, self.levee, self.rating_curve,self.vert_manning_n]
+                      self.sta_elev, self.skew, self.levee, self.rating_curve,self.vert_manning_n, self.ice]
 
         self.geo_list = []  # holds all parts and unknown lines (as strings)
 
