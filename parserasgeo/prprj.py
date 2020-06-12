@@ -1,10 +1,7 @@
 """
 prprj.py - parse RAS project file
-
 Version 0.001
-
 Parses very basic information from a RAS project file.
-
 """
 
 class ProjectTitle(object):
@@ -114,14 +111,7 @@ class ParseRASProject(object):
                         self.prj_list.append(line)
 
 
-    def write(self, out_prj_filename):
-        with open(out_prj_filename, 'wt', newline='\r\n') as outfile:
-            for line in self.prj_list:
-                outfile.write(str(line))
 
-class AddData(object):
-    def __init__(self, prj_list):
-        self.prj_list = prj_list
 
     def add_geom_to_prj(self, geom_str):
         #find index of last valid geom
@@ -139,19 +129,27 @@ class AddData(object):
         pf = PlanFiles()
         pf.add_plan(plan_str)
         self.prj_list.insert(idx_insert+1, pf)
-
+        
     def write(self, out_prj_filename):
         with open(out_prj_filename, 'wt', newline='\r\n') as outfile:
             for line in self.prj_list:
-                outfile.write(line.__str__())
+                outfile.write(str(line))
+
+#class AddData(object):
+#    def __init__(self, prj_list):
+#        self.prj_list = prj_list
+#
+#    def write(self, out_prj_filename):
+#        with open(out_prj_filename, 'wt', newline='\r\n') as outfile:
+#            for line in self.prj_list:
+#                outfile.write(line.__str__())
 
 def main():
 
-    prj = ParseRASProject(r"C:\Users\RDCRLDDH\Desktop\NENMRHB4\NENMRHB4_hec_ras.prj")
-    new = AddData(prj.prj_list)
-    new.add_geom_to_prj('g09')
-    new.add_plan_to_prj('p09')
-    new.write(r"C:\Users\RDCRLDDH\Desktop\NENMRHB4\NENMRHB4_hec_ras.prj1")
+    prj = ParseRASProject(r'C:\Users\u4rrecse\Documents\RASFRAZ\RAS Model/BaldEagleCrRAZFR.prj')
+    prj.add_geom_to_prj('g09')
+    prj.add_plan_to_prj('p09')
+    prj.write(r'C:\Users\u4rrecse\Documents\RASFRAZ\RAS Model/BaldEagleCrRAZFR.prj1')
 
 
 
