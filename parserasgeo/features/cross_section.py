@@ -284,16 +284,18 @@ class Vert_Manning_n(object):
         assert self.num_vert_n_elev == len(self.vert_n_elev)
 
         #process vertical n stations
-        if line[:23] != 'Vertical n for Station=':
+        if not line[:23] == 'Vertical n for Station=':
             raise ValueError("Vertical n for Station= does not follow Vertical n Elevations= in geometry file. Aborting.")
-        self.num_vert_n_sta = int(line[23:])
-        line = next(geo_file)
-        while line[:1] == ' ' or line[:1].isdigit() or line[:1] == '-' or line[:1] == '.':
-            vals = split_block_obs(line, 8)
-            for i in range(0, len(vals), 1):
-                self.vert_n_sta.append(vals[i])
+            
+        while line[:23] == 'Vertical n for Station=':
+            self.num_vert_n_sta = float(line[23:])
             line = next(geo_file)
-        assert self.num_vert_n_elev == len(self.vert_n_sta)
+            while line[:1] == ' ' or line[:1].isdigit() or line[:1] == '-' or line[:1] == '.':
+                vals = split_block_obs(line, 8)
+                for i in range(0, len(vals), 1):
+                    self.vert_n_sta.append(vals[i])
+                line = next(geo_file)
+        assert len(self.vert_n_sta)%self.num_vert_n_elev == 0
 
         #process vertical n follow
         if line[:16] != 'Vertical n Flow=':
